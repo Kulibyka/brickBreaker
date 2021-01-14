@@ -1,5 +1,6 @@
 import os
 import sys
+
 import pygame
 
 size = width, height = 1200, 720
