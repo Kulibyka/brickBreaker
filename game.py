@@ -9,7 +9,7 @@ screen.fill((0, 0, 255))
 FPS = 60
 clock = pygame.time.Clock()
 pygame.init()
-STEP = 50
+MOVE = 1
 
 # основной персонаж
 player = None
@@ -130,22 +130,42 @@ class Ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(570, 550)
 
 
+movingBall = False
+rd = 25
+coord = []
+s = []
 start_screen()
 running = True
 new_player = Player()
 ball = Ball()
-print(new_player.rect.width)
 while running:
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            coord.extend([570, 550])
+            s.extend([-6, -6])
+            movingBall = True
         if event.type == pygame.MOUSEMOTION:
             if event.pos[0] < 186:
                 new_player.rect.x = 102
-            elif event.pos[0] > 1024:
+            elif event.pos[0] > 1014:
                 new_player.rect.x = 928
             else:
                 new_player.rect.x = event.pos[0] - new_player.rect.width // 2
+    if movingBall:
+        if coord[0] >= 1098 - rd or coord[0] <= 102:
+            s[0] = -s[0]
+        if coord[1] >= 698 - rd or coord[1] <= 22:
+            s[1] = -s[1]
+        coord[0] += s[0]
+        coord[1] += s[1]
+        ball.rect.x, ball.rect.y = coord
+
+        pygame.display.flip()
+        clock.tick(100)
+
     fon = pygame.transform.scale(load_image('fon_game.jpg'), (width, height))
     screen.blit(fon, (0, 0))
     player_group.draw(screen)
