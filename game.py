@@ -109,11 +109,40 @@ def rule_screen():
         clock.tick(FPS)
 
 
-def render():
+def load_level(name):
+    fullname = "data/" + name
+    # читаем уровень, убирая символы перевода строки
+    try:
+        with open(fullname, 'r') as mapFile:
+            level_map = [line.strip() for line in mapFile]
+            FIELD_SIZE = len(level_map[0]), len(level_map)
+    except FileNotFoundError as error:
+        print('Cannot load image:', name)
+        sys.exit()
+
+    # и подсчитываем максимальную длину
+    max_width = max(map(len, level_map))
+
+    # дополняем каждую строку пустыми клетками ('.')
+    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+
+def render(lvl_map):
     pygame.draw.line(screen, pygame.Color('white'), (100, 20), (1100, 20), 2)
     pygame.draw.line(screen, pygame.Color('white'), (1100, 20), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 700), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 20), (100, 700), 2)
+    color = ['red', 'green', 'blue']
+    for i in range(len(lvl_map)):
+        for j in range(len(lvl_map[i])):
+            Brick(210 + 60 * j, 100 + 20 * i, color[int(lvl_map[i][j])])
+
+
+class Brick(pygame.sprite.Sprite):
+    def __init__(self, x, y, color):
+        super().__init__(tiles_group, all_sprites)
+        self.image = load_image(f'{color}.jpg')
+        self.rect = self.image.get_rect().move(x, y)
 
 
 class Player(pygame.sprite.Sprite):
@@ -130,6 +159,7 @@ class Ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(570, 550)
 
 
+lvl_map = load_level('lvl_1.txt')
 movingBall = False
 rd = 25
 coord = []
@@ -140,7 +170,6 @@ new_player = Player()
 ball = Ball()
 while running:
     for event in pygame.event.get():
-
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -170,6 +199,6 @@ while running:
     screen.blit(fon, (0, 0))
     player_group.draw(screen)
     tiles_group.draw(screen)
-    render()
+    render(lvl_map)
     pygame.display.flip()
     clock.tick(FPS)
