@@ -15,7 +15,6 @@ MOVE = 1
 player = None
 
 # группы спрайтов
-all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 bricks_group = pygame.sprite.Group()
@@ -144,26 +143,32 @@ def generate_level(lvl_map):
 
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, color):
-        super().__init__(bricks_group, all_sprites)
+        super().__init__(bricks_group)
         self.image = load_image(f'{color}.jpg')
         self.rect = self.image.get_rect().move(x, y)
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(player_group, all_sprites)
+        super().__init__(player_group)
         self.image = load_image('platform1.jpg')
         self.rect = self.image.get_rect().move(500, 620)
 
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(tiles_group, all_sprites)
+        super().__init__(tiles_group)
         self.image = load_image('ball.jpg')
         self.rect = self.image.get_rect().move(570, 550)
         self.movingBall = False
         self.speed = [-5, -5]
         self.coord = [570, 550]
+
+    def delete(self, x, y):
+        for sprite in bricks_group:
+            if (x, y) == sprite.rect.topleft:
+                bricks_group.remove(sprite)
+                break
 
     def update(self):
         if self.movingBall:
@@ -176,14 +181,19 @@ class Ball(pygame.sprite.Sprite):
                 x_b, y_b = self.rect.topleft
                 if x_b < x <= x_b + 24 and y <= y_b + 12 <= y + 20:
                     self.speed[0] = -self.speed[0]
+                    self.delete(x, y)
                 elif y_b < y <= y_b + 24 and x <= x_b + 12 <= x + 60:
                     self.speed[1] = -self.speed[1]
+                    self.delete(x, y)
                 elif x_b <= x + 60 < x_b + 24 and y <= y_b + 12 <= y + 20:
                     self.speed[0] = -self.speed[0]
+                    self.delete(x, y)
                 elif y_b <= y + 20 < y_b + 24 and x <= x_b + 12 <= x + 60:
                     self.speed[1] = -self.speed[1]
+                    self.delete(x, y)
             self.coord[0] += self.speed[0]
             self.coord[1] += self.speed[1]
+
             ball.rect.x, ball.rect.y = self.coord
 
 
