@@ -18,6 +18,7 @@ player = None
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+bricks_group = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -127,11 +128,14 @@ def load_level(name):
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
-def render(lvl_map):
+def render():
     pygame.draw.line(screen, pygame.Color('white'), (100, 20), (1100, 20), 2)
     pygame.draw.line(screen, pygame.Color('white'), (1100, 20), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 700), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 20), (100, 700), 2)
+
+
+def generate_level(lvl_map):
     color = ['red', 'green', 'blue']
     for i in range(len(lvl_map)):
         for j in range(len(lvl_map[i])):
@@ -140,7 +144,7 @@ def render(lvl_map):
 
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, color):
-        super().__init__(tiles_group, all_sprites)
+        super().__init__(bricks_group, all_sprites)
         self.image = load_image(f'{color}.jpg')
         self.rect = self.image.get_rect().move(x, y)
 
@@ -157,25 +161,45 @@ class Ball(pygame.sprite.Sprite):
         super().__init__(tiles_group, all_sprites)
         self.image = load_image('ball.jpg')
         self.rect = self.image.get_rect().move(570, 550)
+        self.movingBall = False
+        self.speed = [-5, -5]
+        self.coord = [570, 550]
+
+    def update(self):
+        if self.movingBall:
+            if self.coord[0] >= 1098 - rd or self.coord[0] <= 102:
+                self.speed[0] = -self.speed[0]
+            if self.coord[1] >= 698 - rd or self.coord[1] <= 22:
+                self.speed[1] = -self.speed[1]
+            if pygame.sprite.spritecollideany(self, bricks_group):
+                x, y = pygame.sprite.spritecollideany(self, bricks_group).rect.topleft
+                x_b, y_b = self.rect.topleft
+                if x_b < x <= x_b + 24 and y <= y_b + 12 <= y + 20:
+                    self.speed[0] = -self.speed[0]
+                elif y_b < y <= y_b + 24 and x <= x_b + 12 <= x + 60:
+                    self.speed[1] = -self.speed[1]
+                elif x_b <= x + 60 < x_b + 24 and y <= y_b + 12 <= y + 20:
+                    self.speed[0] = -self.speed[0]
+                elif y_b <= y + 20 < y_b + 24 and x <= x_b + 12 <= x + 60:
+                    self.speed[1] = -self.speed[1]
+            self.coord[0] += self.speed[0]
+            self.coord[1] += self.speed[1]
+            ball.rect.x, ball.rect.y = self.coord
 
 
-lvl_map = load_level('lvl_1.txt')
-movingBall = False
-rd = 25
-coord = []
-s = []
+rd = 24
 start_screen()
+generate_level(load_level('lvl_1.txt'))
 running = True
 new_player = Player()
 ball = Ball()
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            coord.extend([570, 550])
-            s.extend([-6, -6])
-            movingBall = True
+            ball.movingBall = True
         if event.type == pygame.MOUSEMOTION:
             if event.pos[0] < 186:
                 new_player.rect.x = 102
@@ -183,22 +207,12 @@ while running:
                 new_player.rect.x = 928
             else:
                 new_player.rect.x = event.pos[0] - new_player.rect.width // 2
-    if movingBall:
-        if coord[0] >= 1098 - rd or coord[0] <= 102:
-            s[0] = -s[0]
-        if coord[1] >= 698 - rd or coord[1] <= 22:
-            s[1] = -s[1]
-        coord[0] += s[0]
-        coord[1] += s[1]
-        ball.rect.x, ball.rect.y = coord
-
-        pygame.display.flip()
-        clock.tick(100)
-
     fon = pygame.transform.scale(load_image('fon_game.jpg'), (width, height))
     screen.blit(fon, (0, 0))
+    ball.update()
     player_group.draw(screen)
     tiles_group.draw(screen)
-    render(lvl_map)
+    bricks_group.draw(screen)
+    render()
     pygame.display.flip()
     clock.tick(FPS)
