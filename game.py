@@ -10,7 +10,7 @@ FPS = 60
 clock = pygame.time.Clock()
 pygame.init()
 MOVE = 1
-
+lives = 3
 # основной персонаж
 player = None
 
@@ -54,6 +54,18 @@ class Ball(pygame.sprite.Sprite):
 
     def update(self):
         if self.movingBall:
+            if self.coord[1] >= 630:
+                global lives
+                lives = lives - 1
+                if lives < 1:
+                    looser()
+                ball.move()
+                self.delete(self.rect[0], self.rect[1])
+                self.rect = self.image.get_rect().move(570, 550)
+                ball.coord = [570, 550]
+                ball.speed = [-10, -10]
+                ball.rect.x, ball.rect.y = ball.coord
+                pass
             if self.coord[0] >= 1098 - rd or self.coord[0] <= 102:
                 self.speed[0] = -self.speed[0]
             if self.coord[1] >= 698 - rd or self.coord[1] <= 22:
@@ -147,15 +159,18 @@ def start_screen():
         clock.tick(FPS)
 
 
+
 def rule_screen():
-    rule_text = ["блаблаблаблабла", "блаблаблаблабла", "блаблаблаблабла",
-                 "блаблаблаблабла", "блаблаблаблабла", "блаблаблаблабла"]
+    rule_text = [" Игрок должен разбить стену из кирпичей,", "отразив прыгающий мяч платформой.",
+                 "Платформа управляется мышью компьютера.", "Для начала игрок получает 3 жизни",
+                 "Жизнь теряется, если мяч попадает", "в нижнюю часть экрана.",
+                 "Если жизни потеряны - игра окончена.", "Цель - уничтожить все кирпичики."]
     fon = pygame.transform.scale(load_image('fon_rules.jpg'), (width, height))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 70)
     text_coord = 10
     for line in rule_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
+        string_rendered = font.render(line, True, (185, 198, 237))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.y = text_coord
@@ -203,6 +218,16 @@ def render():
     pygame.draw.line(screen, pygame.Color('white'), (1100, 20), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 700), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 20), (100, 700), 2)
+    lf = pygame.transform.scale(load_image('live.jpg'), (25, 20))
+    if lives == 3:
+        screen.blit(lf, (1000, 2))
+        screen.blit(lf, (1030, 2))
+        screen.blit(lf, (1060, 2))
+    if lives == 2:
+        screen.blit(lf, (1000, 2))
+        screen.blit(lf, (1030, 2))
+    if lives == 1:
+        screen.blit(lf, (1000, 2))
 
 
 def generate_level(lvl_map):
@@ -210,11 +235,13 @@ def generate_level(lvl_map):
     for i in range(len(lvl_map)):
         for j in range(len(lvl_map[i])):
             if lvl_map[i][j] != ' ':
-                Brick(210 + 60 * j, 100 + 20 * i, color[int(lvl_map[i][j])])
+                Brick(210 + 100 * j, 100 + 20 * i, color[int(lvl_map[i][j])])
 
 
 def next_lvl(lvl):
     ball.movingBall = False
+    global lives
+    lives = 3
     ball.coord = [570, 550]
     ball.speed = [-10, -10]
     ball.rect.x, ball.rect.y = ball.coord
@@ -237,6 +264,33 @@ def win_game():
                 if 501 < mouse_pos[0] < 783 and 603 < mouse_pos[1] < 651:
                     return
         fon = pygame.transform.scale(load_image('victory.jpg'), (width, height))
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font(None, 70)
+        string_rendered = font.render('На главную', True, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        intro_rect.y = 600
+        intro_rect.x = 500
+        screen.blit(string_rendered, intro_rect)
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def looser():
+    for i in range(720):
+        fon1 = pygame.transform.scale(load_image('gameover.jpg'), (width, height))
+        screen.blit(fon1, (0, i - 720))
+        pygame.display.flip()
+        clock.tick(FPS)
+        m = True
+    while m:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                if 501 < mouse_pos[0] < 783 and 603 < mouse_pos[1] < 651:
+                    return
+        fon = pygame.transform.scale(load_image('gameover.jpg'), (width, height))
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 70)
         string_rendered = font.render('На главную', True, pygame.Color('white'))
