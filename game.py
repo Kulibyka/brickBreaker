@@ -20,6 +20,79 @@ player_group = pygame.sprite.Group()
 bricks_group = pygame.sprite.Group()
 
 
+class Brick(pygame.sprite.Sprite):
+    def __init__(self, x, y, color):
+        super().__init__(bricks_group)
+        self.image = load_image(f'{color}.jpg')
+        self.rect = self.image.get_rect().move(x, y)
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(player_group)
+        self.image = load_image('platform1.jpg')
+        self.rect = self.image.get_rect().move(500, 620)
+
+
+class Ball(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(tiles_group)
+        self.image = load_image('ball1.jpg')
+        self.rect = self.image.get_rect().move(570, 550)
+        self.movingBall = False
+        self.speed = [-10, -10]
+        self.coord = [570, 550]
+
+    def delete(self, x, y):
+        for sprite in bricks_group:
+            if (x, y) == sprite.rect.topleft:
+                bricks_group.remove(sprite)
+                break
+
+    def move(self):
+        self.movingBall = not self.movingBall
+
+    def update(self):
+        if self.movingBall:
+            if self.coord[0] >= 1098 - rd or self.coord[0] <= 102:
+                self.speed[0] = -self.speed[0]
+            if self.coord[1] >= 698 - rd or self.coord[1] <= 22:
+                self.speed[1] = -self.speed[1]
+            if pygame.sprite.spritecollideany(self, bricks_group):
+                x, y = pygame.sprite.spritecollideany(self, bricks_group).rect.topleft
+                x_b, y_b = self.rect.topleft
+                if x_b < x <= x_b + 20 and y <= y_b + 10 <= y + 20:
+                    self.speed[0] = -self.speed[0]
+                    self.delete(x, y)
+                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 60:
+                    self.speed[1] = -self.speed[1]
+                    self.delete(x, y)
+                elif x_b <= x + 60 < x_b + 20 and y <= y_b + 10 <= y + 20:
+                    self.speed[0] = -self.speed[0]
+                    self.delete(x, y)
+                elif y_b <= y + 20 < y_b + 20 and x <= x_b + 10 <= x + 60:
+                    self.speed[1] = -self.speed[1]
+                    self.delete(x, y)
+            if pygame.sprite.spritecollideany(self, player_group):
+                x, y = pygame.sprite.spritecollideany(self, player_group).rect.topleft
+                x_b, y_b = self.rect.topleft
+                if (x_b < x <= x_b + 20 or x_b <= x + 172 < x_b + 20) and y <= y_b + 10 <= y + 32:
+                    self.speed[0] = -self.speed[0]
+                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 172:
+                    if x + 86 <= x_b:
+                        k = (x + 172 - x_b) / 86
+                        self.speed[0] = int((200 * (1 - k)) ** 0.5)
+                        self.speed[1] = -int((200 * k) ** 0.5)
+                    else:
+                        k = (x_b - x) / 86
+                        self.speed[0] = -int((200 * (1 - k)) ** 0.5)
+                        self.speed[1] = -int((200 * k) ** 0.5)
+            self.coord[0] += self.speed[0]
+            self.coord[1] += self.speed[1]
+
+            ball.rect.x, ball.rect.y = self.coord
+
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     try:
@@ -101,9 +174,7 @@ def rule_screen():
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = event.pos
-                print(mouse_pos)
                 if 501 < mouse_pos[0] < 783 and 603 < mouse_pos[1] < 651:
-                    print(1)
                     return
         pygame.display.flip()
         clock.tick(FPS)
@@ -142,93 +213,56 @@ def generate_level(lvl_map):
                 Brick(210 + 60 * j, 100 + 20 * i, color[int(lvl_map[i][j])])
 
 
-class Brick(pygame.sprite.Sprite):
-    def __init__(self, x, y, color):
-        super().__init__(bricks_group)
-        self.image = load_image(f'{color}.jpg')
-        self.rect = self.image.get_rect().move(x, y)
+def next_lvl(lvl):
+    ball.movingBall = False
+    ball.coord = [570, 550]
+    ball.speed = [-10, -10]
+    ball.rect.x, ball.rect.y = ball.coord
+    generate_level(load_level(f'lvl_{lvl}.txt'))
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(player_group)
-        self.image = load_image('platform1.jpg')
-        self.rect = self.image.get_rect().move(500, 620)
+def check_win():
+    if not bricks_group.sprites():
+        return True
+    return False
 
 
-class Ball(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(tiles_group)
-        self.image = load_image('ball1.jpg')
-        self.rect = self.image.get_rect().move(570, 550)
-        self.movingBall = False
-        self.speed = [-10, -10]
-        self.coord = [570, 550]
-
-    def delete(self, x, y):
-        for sprite in bricks_group:
-            if (x, y) == sprite.rect.topleft:
-                bricks_group.remove(sprite)
-                break
-
-    def move(self):
-        self.movingBall = not self.movingBall
-
-    def update(self):
-        if self.movingBall:
-            if self.coord[0] >= 1098 - rd or self.coord[0] <= 102:
-                self.speed[0] = -self.speed[0]
-            if self.coord[1] >= 698 - rd or self.coord[1] <= 22:
-                self.speed[1] = -self.speed[1]
-            if pygame.sprite.spritecollideany(self, bricks_group):
-                x, y = pygame.sprite.spritecollideany(self, bricks_group).rect.topleft
-                x_b, y_b = self.rect.topleft
-                if x_b < x <= x_b + 20 and y <= y_b + 10 <= y + 20:
-                    self.speed[0] = -self.speed[0]
-                    self.delete(x, y)
-                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 60:
-                    self.speed[1] = -self.speed[1]
-                    self.delete(x, y)
-                elif x_b <= x + 60 < x_b + 20 and y <= y_b + 10 <= y + 20:
-                    self.speed[0] = -self.speed[0]
-                    self.delete(x, y)
-                elif y_b <= y + 20 < y_b + 20 and x <= x_b + 10 <= x + 60:
-                    self.speed[1] = -self.speed[1]
-                    self.delete(x, y)
-            if pygame.sprite.spritecollideany(self, player_group):
-                x, y = pygame.sprite.spritecollideany(self, player_group).rect.topleft
-                x_b, y_b = self.rect.topleft
-                if (x_b < x <= x_b + 20 or x_b <= x + 172 < x_b + 20) and y <= y_b + 10 <= y + 32:
-                    self.speed[0] = -self.speed[0]
-                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 172:
-                    if x + 86 <= x_b:
-                        k = (x + 172 - x_b) / 86
-                        self.speed[0] = int((200 * (1 - k))**0.5)
-                        self.speed[1] = -int((200 * k)**0.5)
-                    else:
-                        k = (x_b - x) / 86
-                        self.speed[0] = -int((200 * (1 - k))**0.5)
-                        self.speed[1] = -int((200 * k)**0.5)
-                print(self.speed)
-            self.coord[0] += self.speed[0]
-            self.coord[1] += self.speed[1]
-
-            ball.rect.x, ball.rect.y = self.coord
+def win_game():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                if 501 < mouse_pos[0] < 783 and 603 < mouse_pos[1] < 651:
+                    return
+        fon = pygame.transform.scale(load_image('victory.jpg'), (width, height))
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font(None, 70)
+        string_rendered = font.render('На главную', True, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        intro_rect.y = 600
+        intro_rect.x = 500
+        screen.blit(string_rendered, intro_rect)
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 rd = 20
+level = 1
 start_screen()
-generate_level(load_level('lvl_1.txt'))
-running = True
 new_player = Player()
 ball = Ball()
+next_lvl(level)
+running = True
+
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            ball.move()
+            ball.movingBall = True
         if event.type == pygame.MOUSEMOTION:
             if event.pos[0] < 186:
                 new_player.rect.x = 102
@@ -245,3 +279,12 @@ while running:
     render()
     pygame.display.flip()
     clock.tick(FPS)
+    if check_win():
+        if level != 3:
+            level += 1
+            next_lvl(level)
+        else:
+            win_game()
+            level = 1
+            start_screen()
+            next_lvl(level)
