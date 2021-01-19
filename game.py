@@ -1,6 +1,5 @@
 import os
 import sys
-
 import pygame
 
 size = width, height = 1200, 720
@@ -18,6 +17,12 @@ player = None
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 bricks_group = pygame.sprite.Group()
+back_ground = pygame.mixer.Sound("data/background.mp3")
+back_ground.set_volume(0.1)
+hit_sound = pygame.mixer.Sound("data/hit.mp3")
+gameover_sound = pygame.mixer.Sound("data/gameover.mp3")
+victory_sound = pygame.mixer.Sound("data/victory.mp3")
+nextlevel_sound = pygame.mixer.Sound("data/next_level.mp3")
 
 
 class Brick(pygame.sprite.Sprite):
@@ -47,6 +52,7 @@ class Ball(pygame.sprite.Sprite):
         for sprite in bricks_group:
             if (x, y) == sprite.rect.topleft:
                 bricks_group.remove(sprite)
+                hit_sound.play()
                 break
 
     def move(self):
@@ -240,6 +246,7 @@ def generate_level(lvl_map):
 
 def next_lvl(lvl):
     ball.movingBall = False
+    nextlevel_sound.play()
     global lives
     lives = 3
     ball.coord = [570, 550]
@@ -255,6 +262,7 @@ def check_win():
 
 
 def win_game():
+    victory_sound.play()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -276,7 +284,8 @@ def win_game():
 
 
 def looser():
-    for i in range(720):
+    gameover_sound.play()
+    for i in range(0, 720, 8):
         fon1 = pygame.transform.scale(load_image('gameover.jpg'), (width, height))
         screen.blit(fon1, (0, i - 720))
         pygame.display.flip()
@@ -312,6 +321,7 @@ running = True
 
 
 while running:
+    back_ground.play(loops=-1)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -342,3 +352,4 @@ while running:
             level = 1
             start_screen()
             next_lvl(level)
+
