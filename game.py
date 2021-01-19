@@ -218,16 +218,16 @@ def render():
     pygame.draw.line(screen, pygame.Color('white'), (1100, 20), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 700), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 20), (100, 700), 2)
-    lf = pygame.transform.scale(load_image('live.jpg'), (25, 20))
+    lf = pygame.transform.scale(load_image('live.png'), (40, 40))
     if lives == 3:
-        screen.blit(lf, (1000, 2))
-        screen.blit(lf, (1030, 2))
-        screen.blit(lf, (1060, 2))
+        screen.blit(lf, (1150, 12))
+        screen.blit(lf, (1150, 62))
+        screen.blit(lf, (1150, 112))
     if lives == 2:
-        screen.blit(lf, (1000, 2))
-        screen.blit(lf, (1030, 2))
+        screen.blit(lf, (1150, 12))
+        screen.blit(lf, (1150, 62))
     if lives == 1:
-        screen.blit(lf, (1000, 2))
+        screen.blit(lf, (1150, 12))
 
 
 def generate_level(lvl_map):
