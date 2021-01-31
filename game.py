@@ -17,8 +17,6 @@ player = None
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 bricks_group = pygame.sprite.Group()
-back_ground = pygame.mixer.Sound("data/background.mp3")
-back_ground.set_volume(0.1)
 hit_sound = pygame.mixer.Sound("data/hit.mp3")
 gameover_sound = pygame.mixer.Sound("data/gameover.mp3")
 victory_sound = pygame.mixer.Sound("data/victory.mp3")
@@ -60,11 +58,9 @@ class Ball(pygame.sprite.Sprite):
 
     def update(self):
         if self.movingBall:
-            if self.coord[1] >= 630:
+            if self.coord[1] >= 650:
                 global lives
                 lives = lives - 1
-                if lives < 1:
-                    looser()
                 ball.move()
                 self.delete(self.rect[0], self.rect[1])
                 self.rect = self.image.get_rect().move(570, 550)
@@ -290,7 +286,7 @@ def looser():
         screen.blit(fon1, (0, i - 720))
         pygame.display.flip()
         clock.tick(FPS)
-        m = True
+    m = True
     while m:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -321,7 +317,6 @@ running = True
 
 
 while running:
-    back_ground.play(loops=-1)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -352,4 +347,8 @@ while running:
             level = 1
             start_screen()
             next_lvl(level)
-
+    if lives < 1:
+        looser()
+        level = 1
+        start_screen()
+        next_lvl(level)
