@@ -1,6 +1,7 @@
 import os
 import sys
 import pygame
+import random
 
 size = width, height = 1200, 720
 screen = pygame.display.set_mode(size)
@@ -12,99 +13,17 @@ MOVE = 1
 lives = 3
 # основной персонаж
 player = None
+screen_rect = (0, 0, width, height)
 
 # группы спрайтов
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 bricks_group = pygame.sprite.Group()
+all_sprites = pygame.sprite.Group()
 hit_sound = pygame.mixer.Sound("data/hit.mp3")
 gameover_sound = pygame.mixer.Sound("data/gameover.mp3")
 victory_sound = pygame.mixer.Sound("data/victory.mp3")
 nextlevel_sound = pygame.mixer.Sound("data/next_level.mp3")
-
-
-class Brick(pygame.sprite.Sprite):
-    def __init__(self, x, y, color):
-        super().__init__(bricks_group)
-        self.image = load_image(f'{color}.jpg')
-        self.rect = self.image.get_rect().move(x, y)
-
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(player_group)
-        self.image = load_image('platform1.jpg')
-        self.rect = self.image.get_rect().move(500, 620)
-
-
-class Ball(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(tiles_group)
-        self.image = load_image('ball1.jpg')
-        self.rect = self.image.get_rect().move(570, 550)
-        self.movingBall = False
-        self.speed = [-10, -10]
-        self.coord = [570, 550]
-
-    def delete(self, x, y):
-        for sprite in bricks_group:
-            if (x, y) == sprite.rect.topleft:
-                bricks_group.remove(sprite)
-                hit_sound.play()
-                break
-
-    def move(self):
-        self.movingBall = not self.movingBall
-
-    def update(self):
-        if self.movingBall:
-            if self.coord[1] >= 650:
-                global lives
-                lives = lives - 1
-                ball.move()
-                self.delete(self.rect[0], self.rect[1])
-                self.rect = self.image.get_rect().move(570, 550)
-                ball.coord = [570, 550]
-                ball.speed = [-10, -10]
-                ball.rect.x, ball.rect.y = ball.coord
-                pass
-            if self.coord[0] >= 1098 - rd or self.coord[0] <= 102:
-                self.speed[0] = -self.speed[0]
-            if self.coord[1] >= 698 - rd or self.coord[1] <= 22:
-                self.speed[1] = -self.speed[1]
-            if pygame.sprite.spritecollideany(self, bricks_group):
-                x, y = pygame.sprite.spritecollideany(self, bricks_group).rect.topleft
-                x_b, y_b = self.rect.topleft
-                if x_b < x <= x_b + 20 and y <= y_b + 10 <= y + 20:
-                    self.speed[0] = -self.speed[0]
-                    self.delete(x, y)
-                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 60:
-                    self.speed[1] = -self.speed[1]
-                    self.delete(x, y)
-                elif x_b <= x + 60 < x_b + 20 and y <= y_b + 10 <= y + 20:
-                    self.speed[0] = -self.speed[0]
-                    self.delete(x, y)
-                elif y_b <= y + 20 < y_b + 20 and x <= x_b + 10 <= x + 60:
-                    self.speed[1] = -self.speed[1]
-                    self.delete(x, y)
-            if pygame.sprite.spritecollideany(self, player_group):
-                x, y = pygame.sprite.spritecollideany(self, player_group).rect.topleft
-                x_b, y_b = self.rect.topleft
-                if (x_b < x <= x_b + 20 or x_b <= x + 172 < x_b + 20) and y <= y_b + 10 <= y + 32:
-                    self.speed[0] = -self.speed[0]
-                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 172:
-                    if x + 86 <= x_b:
-                        k = (x + 172 - x_b) / 86
-                        self.speed[0] = int((200 * (1 - k)) ** 0.5)
-                        self.speed[1] = -int((200 * k) ** 0.5)
-                    else:
-                        k = (x_b - x) / 86
-                        self.speed[0] = -int((200 * (1 - k)) ** 0.5)
-                        self.speed[1] = -int((200 * k) ** 0.5)
-            self.coord[0] += self.speed[0]
-            self.coord[1] += self.speed[1]
-
-            ball.rect.x, ball.rect.y = self.coord
 
 
 def load_image(name, colorkey=None):
@@ -159,7 +78,6 @@ def start_screen():
         render_start_screen()
         pygame.display.flip()
         clock.tick(FPS)
-
 
 
 def rule_screen():
@@ -265,7 +183,7 @@ def win_game():
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = event.pos
-                if 501 < mouse_pos[0] < 783 and 603 < mouse_pos[1] < 651:
+                if 460 < mouse_pos[0] < 743 and 603 < mouse_pos[1] < 651:
                     return
         fon = pygame.transform.scale(load_image('victory.jpg'), (width, height))
         screen.blit(fon, (0, 0))
@@ -273,7 +191,7 @@ def win_game():
         string_rendered = font.render('На главную', True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         intro_rect.y = 600
-        intro_rect.x = 500
+        intro_rect.x = 4650
         screen.blit(string_rendered, intro_rect)
         pygame.display.flip()
         clock.tick(FPS)
@@ -307,6 +225,131 @@ def looser():
         clock.tick(FPS)
 
 
+def create_particles(position):
+    # количество создаваемых частиц
+    particle_count = 20
+    # возможные скорости
+    numbers = range(-5, 6)
+    for _ in range(particle_count):
+        Particle(position, random.choice(numbers), random.choice(numbers))
+
+
+class Brick(pygame.sprite.Sprite):
+    def __init__(self, x, y, color):
+        super().__init__(bricks_group)
+        self.image = load_image(f'{color}.jpg')
+        self.rect = self.image.get_rect().move(x, y)
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(player_group)
+        self.image = load_image('platform1.jpg')
+        self.rect = self.image.get_rect().move(500, 620)
+
+
+class Ball(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(tiles_group)
+        self.image = load_image('ball1.jpg')
+        self.rect = self.image.get_rect().move(570, 550)
+        self.movingBall = False
+        self.speed = [-10, -10]
+        self.coord = [570, 550]
+
+    def delete(self, x, y):
+        for sprite in bricks_group:
+            if (x, y) == sprite.rect.topleft:
+                bricks_group.remove(sprite)
+                hit_sound.play()
+                break
+
+    def move(self):
+        self.movingBall = not self.movingBall
+
+    def update(self):
+        if self.movingBall:
+            if self.coord[1] >= 650:
+                global lives
+                lives = lives - 1
+                ball.move()
+                self.delete(self.rect[0], self.rect[1])
+                self.rect = self.image.get_rect().move(570, 550)
+                ball.coord = [570, 550]
+                ball.speed = [-10, -10]
+                ball.rect.x, ball.rect.y = ball.coord
+                pass
+            if self.coord[0] >= 1098 - rd or self.coord[0] <= 102:
+                self.speed[0] = -self.speed[0]
+            if self.coord[1] >= 698 - rd or self.coord[1] <= 22:
+                self.speed[1] = -self.speed[1]
+            if pygame.sprite.spritecollideany(self, bricks_group):
+                x, y = pygame.sprite.spritecollideany(self, bricks_group).rect.topleft
+                x_b, y_b = self.rect.topleft
+                if x_b < x <= x_b + 20 and y <= y_b + 10 <= y + 20:
+                    self.speed[0] = -self.speed[0]
+                    self.delete(x, y)
+                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 60:
+                    self.speed[1] = -self.speed[1]
+                    self.delete(x, y)
+                elif x_b <= x + 60 < x_b + 20 and y <= y_b + 10 <= y + 20:
+                    self.speed[0] = -self.speed[0]
+                    self.delete(x, y)
+                elif y_b <= y + 20 < y_b + 20 and x <= x_b + 10 <= x + 60:
+                    self.speed[1] = -self.speed[1]
+                    self.delete(x, y)
+                create_particles((x + 30, y + 10))
+            if pygame.sprite.spritecollideany(self, player_group):
+                x, y = pygame.sprite.spritecollideany(self, player_group).rect.topleft
+                x_b, y_b = self.rect.topleft
+                if (x_b < x <= x_b + 20 or x_b <= x + 172 < x_b + 20) and y <= y_b + 20 <= y + 32:
+                    self.speed[0] = -self.speed[0]
+                elif y_b < y <= y_b + 20 and x <= x_b + 10 <= x + 172:
+                    if x + 86 <= x_b:
+                        k = (x + 172 - x_b) / 86
+                        self.speed[0] = int((200 * (1 - k)) ** 0.5)
+                        self.speed[1] = -int((200 * k) ** 0.5)
+                    else:
+                        k = (x_b - x) / 86
+                        self.speed[0] = -int((200 * (1 - k)) ** 0.5)
+                        self.speed[1] = -int((200 * k) ** 0.5)
+            self.coord[0] += self.speed[0]
+            self.coord[1] += self.speed[1]
+
+            ball.rect.x, ball.rect.y = self.coord
+
+
+class Particle(pygame.sprite.Sprite):
+    # сгенерируем частицы разного размера
+    fire = [load_image("star.png")]
+    for scale in (5, 10, 20):
+        fire.append(pygame.transform.scale(fire[0], (scale, scale)))
+
+    def __init__(self, pos, dx, dy):
+        super().__init__(all_sprites)
+        self.image = random.choice(self.fire)
+        self.rect = self.image.get_rect()
+
+        # у каждой частицы своя скорость — это вектор
+        self.velocity = [dx, dy]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+        # гравитация будет одинаковой (значение константы)
+        self.gravity = 1
+
+    def update(self):
+        # применяем гравитационный эффект:
+        # движение с ускорением под действием гравитации
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(screen_rect):
+            self.kill()
+
+
 rd = 20
 level = 1
 start_screen()
@@ -314,7 +357,6 @@ new_player = Player()
 ball = Ball()
 next_lvl(level)
 running = True
-
 
 while running:
     for event in pygame.event.get():
@@ -332,9 +374,11 @@ while running:
     fon = pygame.transform.scale(load_image('fon_game.jpg'), (width, height))
     screen.blit(fon, (0, 0))
     ball.update()
+    all_sprites.update()
     player_group.draw(screen)
     tiles_group.draw(screen)
     bricks_group.draw(screen)
+    all_sprites.draw(screen)
     render()
     pygame.display.flip()
     clock.tick(FPS)
