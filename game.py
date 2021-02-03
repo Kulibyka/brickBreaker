@@ -139,6 +139,13 @@ def render():
     pygame.draw.line(screen, pygame.Color('white'), (100, 700), (1100, 700), 2)
     pygame.draw.line(screen, pygame.Color('white'), (100, 20), (100, 700), 2)
     lf = pygame.transform.scale(load_image('live.png'), (40, 40))
+    global level
+    font = pygame.font.SysFont('calibri', 22)
+    strin = font.render(f'Уровень {level}', True, pygame.Color('white'))
+    ct = strin.get_rect()
+    ct.y = 10
+    ct.x = 4
+    screen.blit(strin, ct)
     if lives == 3:
         screen.blit(lf, (1150, 12))
         screen.blit(lf, (1150, 62))
@@ -185,9 +192,9 @@ def win_game():
                 mouse_pos = event.pos
                 if 460 < mouse_pos[0] < 743 and 603 < mouse_pos[1] < 651:
                     return
-        fon = pygame.transform.scale(load_image('victory.jpg'), (width, height))
+        fon = pygame.transform.scale(load_image('pic.jpg'), (width, height))
         screen.blit(fon, (0, 0))
-        font = pygame.font.Font(None, 70)
+        font = pygame.font.SysFont('arial', 70)
         string_rendered = font.render('На главную', True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         intro_rect.y = 600
@@ -215,7 +222,7 @@ def looser():
                     return
         fon = pygame.transform.scale(load_image('gameover.jpg'), (width, height))
         screen.blit(fon, (0, 0))
-        font = pygame.font.Font(None, 70)
+        font = pygame.font.SysFont('calibri', 50)
         string_rendered = font.render('На главную', True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         intro_rect.y = 600
