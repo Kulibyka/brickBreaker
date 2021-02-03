@@ -100,7 +100,7 @@ def rule_screen():
     string_rendered = font.render('На главную', True, pygame.Color('white'))
     intro_rect = string_rendered.get_rect()
     intro_rect.y = 600
-    intro_rect.x = 500
+    intro_rect.x = 460
     screen.blit(string_rendered, intro_rect)
 
     while True:
@@ -109,7 +109,7 @@ def rule_screen():
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = event.pos
-                if 501 < mouse_pos[0] < 783 and 603 < mouse_pos[1] < 651:
+                if 460 < mouse_pos[0] < 743 and 603 < mouse_pos[1] < 651:
                     return
         pygame.display.flip()
         clock.tick(FPS)
@@ -155,7 +155,7 @@ def generate_level(lvl_map):
     for i in range(len(lvl_map)):
         for j in range(len(lvl_map[i])):
             if lvl_map[i][j] != ' ':
-                Brick(210 + 100 * j, 100 + 20 * i, color[int(lvl_map[i][j])])
+                Brick(210 + 60 * j, 100 + 20 * i, color[int(lvl_map[i][j])])
 
 
 def next_lvl(lvl):
@@ -191,7 +191,7 @@ def win_game():
         string_rendered = font.render('На главную', True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         intro_rect.y = 600
-        intro_rect.x = 4650
+        intro_rect.x = 460
         screen.blit(string_rendered, intro_rect)
         pygame.display.flip()
         clock.tick(FPS)
